@@ -27,8 +27,10 @@ npm run lint
 
 ### Run your unit tests
 ```
-npm run test:unit
+npm run test
 ```
 
 ### Customize configuration
 See [Configuration Reference](https://cli.vuejs.org/config/).
+
+### mock还未完成
