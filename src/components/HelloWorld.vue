@@ -1,7 +1,8 @@
 <template>
   <div class="hello">
+    {{ indexNum }}
     <div ref="wrap" id="wrap" class="wrap">
-      <div v-for="(item, index) of arr" :key="index" class="content">
+      <div v-for="(item, index) of array" :key="index" class="content">
         <span v-for="(num, index) of item" :key="index" :class="num == 0 ? 'redColor':'greenColor'">{{num}}</span>
       </div>
     </div>
@@ -10,6 +11,7 @@
 
 <script>
 import axios from 'axios'
+import { debuglog } from 'util';
 export default {
   name: 'HelloWorld',
   data () {
@@ -17,46 +19,59 @@ export default {
       arr: [],
       N: 3,
       M: 10,
-      color:'1111'
+      array: [],
+      column:2,
+      rows:10,
+      indexNum: null
     }
   },
   mounted() {
-    this.getNM()
+    this.getColumnRows()
   },
   methods: {
-    getNM() {
+    getColumnRows() {
       let vm = this
       axios.post('/news/index')
-      .then(res=>{
-        vm.N = res.data.data.data.N
-        vm.M = res.data.data.data.M
-        if (vm.N*vm.M >0) {
-          vm.getRenderArray()
+      .then(res => {
+        vm.column = res.data.data.N
+        vm.rows = res.data.data.M
+        if (vm.column*vm.rows >0) {
+          vm.indexNum = vm.getIndex(res.data.data.N, res.data.data.M)
         }
       })
-      // axios.post('/news/produce')
-      // .then(res=>{
-      //   console.log(res.data.data.data.N)
-      //   console.log("============")
-      // })
     },
-    getRenderArray() {
-      this.arr = []
-      let allCharacter = this.getAllCharacter()
-      for(let i =0;i < allCharacter.length/this.N;i++ ) {
-        this.arr.push(allCharacter.substr(i*this.N, this.N))
+    getArray(column, rows) {
+      let _array = []
+      for (let index = 0; index < column; index++) {
+        let _rArray = []
+        for (let rIndex = 0; rIndex < rows; rIndex++) {
+          _rArray.push(this.getOneZero())
+        }
+        _array.push(_rArray)
+      }
+      return _array
+    },
+    getIndex(column, rows) {
+      let array = this.getArray(column, rows)
+      this.array = array
+      let indexNum = null
+      for (let i = 0; i < column; i++) {
+        for (let j = column-1; j > i; j--) {
+          let num = 0
+          for (let k = 0; k <rows; k++) {
+            if (array[i][k]+array[j][k] == 1) {//0.1.2.3
+              num ++
+            }
+          }
+          if (num == rows) {
+            indexNum = j-i+1
+            return indexNum
+          }
+        }
       }
     },
-    getAllCharacter() {
-      let _AllCharacter = []
-      for (let index = 0; index < this.N*this.M; index++) {
-        _AllCharacter.push(Math.round(Math.random()))
-      }
-      if (_AllCharacter.join('').match(/[01]/g).length == _AllCharacter.length) {
-        return _AllCharacter.join('')
-      } else {
-        return
-      }
+    getOneZero() {
+     return Math.round(Math.random())
     }
   }
 }
